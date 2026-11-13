@@ -11,38 +11,31 @@ Hosted as its own project in the AquaBerry Netlify team (Free plan), separate fr
 | Cloudinary (Free) | Stores and resizes event photos uploaded through the admin |
 | Netlify (Free) | Hosts the site |
 
-## How events get onto the site today (no GitHub needed)
+## How events get onto the site
 
-Right now the site is deployed from this folder, the same way as the store. GitHub is only needed later, when
-Yasmin and Aryane edit events themselves online (see "Later: the owners edit online").
+Since Nov 13, 2026 the project is connected to the GitHub repo `aquaberryswim-dev/events-aquaberry`. It must be
+**public** (see step 2 of "Online admin setup"). The repo is the source of
+truth, and every change reaches the site through Git:
 
-1. `npm run admin`, then open http://localhost:8080/admin/ and click **Login** (no password on your own computer).
-2. Add or edit the event. **Publish > Publish now** saves the file in `src/events/` right away. Nothing is live yet.
-3. Check the page at http://localhost:8080 (it refreshes on its own). Stop the admin with Ctrl+C.
-4. Put it live, either way:
-   - `npm run deploy` (builds, then uploads with the Netlify CLI), or
-   - `npm run build`, then in Netlify open the events project > **Deploys** and drag the `_site` folder onto the
-     drop area. Always run the build right before: it empties `_site` first, so old files never go live.
+1. **Online admin** (`events.aquaberry.store/admin/`), for Yasmin, Aryane and Pedro: **Save** keeps a private draft
+   with a free Deploy Preview. Setting Status to **Ready** and clicking **Publish** merges it into `main`, which is
+   one production deploy (15 credits).
+2. **Code changes** (Pedro): work in a local clone on a branch, push it and open a pull request. Netlify builds a
+   free Deploy Preview; merging into `main` is the production deploy. `npm run admin` still works locally: Publish
+   saves the file in your clone, then commit it like any other change.
 
-You can also edit the Markdown file in `src/events/` by hand; the admin just makes it harder to break the format.
-
-First time with the CLI (once per computer):
-
-```sh
-npx netlify-cli@27.15.0 login   # opens the browser to sign in to the AquaBerry Netlify account
-npx netlify-cli@27.15.0 link    # pick the events project; saves its ID in .netlify/ (not a secret)
-npm run deploy:draft            # optional: a private draft link to check before going live
-```
+Do not use `npm run deploy` or drag-and-drop any more. The next Git deploy replaces a manual one, and the repo and
+your folder drift apart. The scripts stay for an emergency only.
 
 ## Credits on the Netlify Free plan (read this first)
 
 The Free plan gives the AquaBerry team **300 credits a month, shared with the store**. When they run out,
 every project in the team pauses, the store included, until the next billing cycle (the 14th).
 
-- A **production deploy costs 15 credits**, whichever way it is made (CLI, drag-and-drop or Git).
-- `npm run deploy:draft` makes a draft deploy, which is not a production deploy. Check Netlify > Usage after
-  the first one to confirm it used no credits.
-- Batch changes: one deploy with the new time and the sponsors costs less than two.
+- A **production deploy costs 15 credits**, whichever way it is made (Git, CLI or drag-and-drop).
+- Deploy Previews (admin drafts and pull requests) and failed builds cost nothing.
+- Batch changes: one Publish with the new time and the sponsors costs less than two.
+- Commits that change nothing the site uses (like this README) are skipped by the `ignore` rule in `netlify.toml`.
 - Form submissions are free on the credit-based plans. Photos load from Cloudinary, so gallery traffic does not use
   Netlify bandwidth credits.
 
@@ -57,10 +50,14 @@ gets its own list and CSV. The form does **not** count people or close itself.
 1. Netlify > events project > **Forms** > **Enable form detection**. Netlify only registers forms it finds while
    deploying, so turn this on first, then deploy. If it was off during a deploy, deploy again.
 2. After the deploy, **Forms** should list `rsvp-2026-12-05-girls-lower-body-workout`.
-3. **Forms > Submission notifications**: add an email notification for this form (or for any form) to the inbox
-   the owners check. An address outside the Netlify team gets a confirmation email first; notifications start once
-   it is confirmed. Emails come from `formresponses@netlify.com`. Replying to one goes straight to the person who
-   signed up, because the form field is named `email`.
+3. **Forms > Submission notifications > Add notification > Email notification**: enter the inbox the owners
+   reply from and choose **Any form**, so every future event's form is covered without doing this again.
+   Add one notification per address if both owners want the emails.
+   - An address outside the Netlify team shows **pending confirmation** until its owner clicks **Confirm** in
+     Netlify's email; nothing is sent to it before that.
+   - If Netlify says the address must belong to a team member, use the email of the AquaBerry Netlify login.
+   - Emails come from `formresponses@netlify.com`. Replying goes straight to the person who signed up, because the
+     form field is named `email`. Only verified sign-ups are emailed, never ones Netlify marks as spam.
 4. Test once on the live site with your own email: you should land on the thank-you page, see the sign-up in
    Forms, and get the notification. Then delete the test sign-up.
 
@@ -75,7 +72,23 @@ gets its own list and CSV. The form does **not** count people or close itself.
 
 Private addresses: for a home, leave **Street address** empty and turn on **Private address**. The page then says
 the address is sent by email, and no address appears on the page, in the calendar file or in `events.json`.
-Never type a home address in the admin: these files become public if the folder is pushed to a public GitHub repo.
+Never type a home address in the admin: every event file is public in the GitHub repo.
+
+### Participation agreement
+
+Turn on **Require the participation agreement** on an event, and its form gets a required box:
+"I have read and agree to the Participation Agreement and Release", with the agreement's short summary above it.
+Each sign-up then stores `agreement: agreed` and `agreement_version` (the agreement's version date) in Netlify and
+the CSV, so you can see which version every person accepted.
+
+- The agreement is one page for all events: `events.aquaberry.store/participation-agreement/`, edited in the admin
+  under **Page text > Participation agreement** (`src/legal/participation-agreement.md`).
+- Whenever its text changes, change its **Version date** too, then Publish.
+- The build stops with a clear error if an event requires the agreement and the page is missing or has no valid
+  version date, so the required box can never disappear without anyone noticing. The live site keeps the last
+  good deploy, and failed builds cost no credits.
+- The text that ships with this site is a plain-English draft, not legal advice. Have a Florida attorney review
+  it before relying on it. People who signed up before the box existed have not agreed to it.
 
 ## Run it on your computer
 
@@ -86,9 +99,9 @@ Requires Node 22 or newer. Run `npm install` once in this folder.
 | `npm run admin` | Admin at http://localhost:8080/admin/ plus the preview. Publish saves files in this folder |
 | `npm start` | Preview only, at http://localhost:8080 |
 | `npm run preview:samples` | Preview with the sample events in `src/samples/` (never built into `_site`) |
-| `npm run build` | Fresh deployable site in `_site/` (no samples, old files removed) |
-| `npm run deploy:draft` | Build, then a Netlify draft deploy (private link) |
-| `npm run deploy` | Build, then a production deploy (15 credits) |
+| `npm run build` | Fresh deployable site in `_site/` (no samples, old files removed); Netlify runs this on every Git deploy |
+| `npm run deploy:draft` | Emergency only: build, then a Netlify draft deploy from this folder |
+| `npm run deploy` | Emergency only: build, then a production deploy from this folder (15 credits) |
 
 Previews write to `.preview/`, never to `_site/`, so a preview can never be deployed by accident.
 The admin's local server (`decap-server`, pinned in `scripts/site.js`) is downloaded on first use. It only listens
@@ -109,30 +122,35 @@ src/_data/site.json    Site URL, store and Instagram links
 src/admin/             The admin: index.html, config.yml (fields and hints), preview.js (branded preview)
 src/_includes/         Page layouts, the event card and the sign-up form
 src/event-thanks.njk   The thank-you page after a sign-up (/events/<event-id>/thanks/, not indexed)
+src/legal/             The participation agreement page (text edited in the admin; layout and address in legal.11tydata.js)
 src/static/_headers    Security and cache headers (works for every deploy method)
 src/assets/            CSS, JavaScript, font (Hanken Grotesk, OFL) and logo files from the Brand Kit
 src/samples/           Sample events for local previews only
 lib/                   Date (Florida time), image, calendar-file and event helpers
 scripts/site.js        The build, preview and admin commands (same on Windows, macOS and Linux)
-netlify.toml           Build settings for later Git deploys
+netlify.toml           Build settings for Git deploys
 ```
 
-## Cloudinary (needed for photo uploads in the admin)
+## Cloudinary (photo uploads in the admin)
 
-1. Create a Free Cloudinary account with the AquaBerry email. Settings > Users: invite Yasmin and Aryane
-   (the Free plan includes 3 users).
-2. Copy the **cloud name** and **API key** (never the API secret) into `src/admin/config.yml`, replacing the two
-   `REPLACE_WITH_` values. Both are public by design.
-3. Each person who uploads signs in to Cloudinary once inside the admin's image picker.
+1. Cloudinary Console > **Settings** (gear icon) > **API Keys**: copy the **cloud name** and the **API Key**.
+   Never copy the **API Secret** anywhere: it stays in Cloudinary.
+2. In `src/admin/config.yml`, replace `REPLACE_WITH_CLOUDINARY_CLOUD_NAME` and `REPLACE_WITH_CLOUDINARY_API_KEY`.
+   Both values are public by design and will be visible in the public repo; that is expected.
+3. Console Settings > **User Management** > **Invite**: add Yasmin and Aryane with the **Media Library Admin** role
+   (full Media Library access, no API keys or billing). Every Media Library user needs a seat; Account Settings
+   shows how many the plan includes.
+4. Commit and push (one production deploy). In the admin, **Choose an image** opens Cloudinary; each person signs in
+   with her own Cloudinary login the first time.
 
-## Later: the owners edit online (needs GitHub)
+## Online admin setup (reference)
 
-The online admin (`events.aquaberry.store/admin/`) saves events by committing to a Git repository, so it needs one.
-Do these in order, once the owners are ready to post events themselves.
+The online admin (`events.aquaberry.store/admin/`) saves events by committing to the Git repository. Steps 1 to 4
+were done on Nov 13, 2026; the rest are here for reference.
 
 1. **Check the event files first.** Everything in this folder becomes public: no home addresses, phone numbers
    or other private details in `src/events/`.
-2. **GitHub (AquaBerry account, 2FA on):** create a **public** repository named `aquaberry-events` and push this
+2. **GitHub (AquaBerry account `aquaberryswim-dev`, 2FA on):** a **public** repository, `events-aquaberry`, with this
    folder. Public matters: on the Netlify Free plan, only public repos allow deploys from commits by people other
    than the one team member (Netlify pricing: "free & unlimited Git Contributors on public repos").
 3. **Netlify:** link the existing events project to the repo (Project configuration > Build & deploy, under
@@ -188,5 +206,8 @@ Test it with `npm run admin` first, then deploy.
 | `npm run admin` stops right away | Port 8080 or 8081 is busy: close other previews or servers and try again |
 | Admin says it cannot reach the local server | Open it at `localhost`, not at another address, while `npm run admin` is running |
 | Photo picker shows an error | Fill in the Cloudinary cloud name and API key in `src/admin/config.yml`; the person must be a Cloudinary user |
+| Build fails: "requires the participation agreement" or "needs a version date" | Restore `src/legal/participation-agreement.md` or fix its Version date (YYYY-MM-DD), or turn the event's switch off |
+| An entry in the admin shows another entry's text | Reload the page before saving. It can happen after jumping between entries with a pasted /admin link |
+| Files uploaded on GitHub landed in the repo root | GitHub's "choose your files" picker puts every file in the folder you are viewing. Drag whole folders onto the upload page instead, which keeps their paths |
 | Invite link opens the home page and nothing happens (online admin) | Check `src/assets/js/site.js` is deployed; the link should jump to `/admin/` |
 | "Unrecognized Git contributor" on a deploy (online admin) | The repo was made private. Make it public again, or move the team to Pro |

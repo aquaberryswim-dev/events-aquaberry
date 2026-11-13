@@ -12,7 +12,7 @@ summary: "An open-air lower body workout for the girls, led by Brazilian coach M
 cover: ""
 cover_alt: ""
 registration: open
-waiver_url: ""
+agreement_required: true
 rsvp_url: ""
 rsvp_label: ""
 gallery: []

@@ -1,0 +1,21 @@
+---
+layout: layouts/base.njk
+---
+{#-
+  The participation agreement page (/participation-agreement/), edited in the admin under Page text.
+  Sign-up forms link here when an event has "Require the participation agreement" turned on,
+  and each sign-up records the version date shown below.
+-#}
+<article class="event legal">
+  <div class="wrap">
+    <p class="back-link"><a href="/">All events</a></p>
+    <h1 class="display display--event">{{ title }}</h1>
+    <p class="legal-version">Version of {{ version | longDate }}</p>
+    {%- if summary %}
+    <p class="legal-summary">{{ summary }}</p>
+    {%- endif %}
+    <div class="prose legal-body">
+      {{ content | safe }}
+    </div>
+  </div>
+</article>
