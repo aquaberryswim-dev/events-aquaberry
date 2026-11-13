@@ -1,0 +1,242 @@
+# Decap CMS settings for events.aquaberry.store
+# Reference: https://decapcms.org/docs/configuration-options/
+# This file is public (anyone can open /admin/config.yml). Never put a password or API secret here.
+
+backend:
+  # Logins come from Netlify Identity (invite only). Yasmin and Aryane need no GitHub account.
+  name: git-gateway
+  branch: main
+  commit_messages:
+    create: "Add event: {{slug}}"
+    update: "Update event: {{slug}}"
+    delete: "Delete event: {{slug}}"
+    uploadMedia: "Upload media: {{path}}"
+    deleteMedia: "Delete media: {{path}}"
+
+# Drafts become pull requests with a free Netlify Deploy Preview.
+# Only "Publish" merges into main, which is the one production deploy (15 credits on the Free plan).
+publish_mode: editorial_workflow
+
+# Local admin: `npm run admin` starts a small server that edits the files in the project folder.
+# Decap only uses it on localhost. That server only supports simple publishing, so on your own computer
+# Decap switches to it automatically: "Publish" saves the file right away (no drafts, nothing is deployed).
+local_backend: true
+
+# File names (and so web addresses and form names) use plain letters: "Café da manhã" becomes "cafe-da-manha".
+slug:
+  encoding: ascii
+  clean_accents: true
+  sanitize_replacement: "-"
+
+site_url: https://events.aquaberry.store
+display_url: https://events.aquaberry.store
+logo_url: /assets/brand/aquaberry-logo-stacked-compact-pink.svg
+
+# Photos live in Cloudinary, not in the public GitHub repo, so a photo can be removed for good with one delete.
+# cloud_name and api_key are public by design (https://decapcms.org/docs/cloudinary/). The API secret never goes here.
+# Each person who uploads signs in to Cloudinary once (the Free plan includes 3 users).
+media_library:
+  name: cloudinary
+  config:
+    cloud_name: REPLACE_WITH_CLOUDINARY_CLOUD_NAME
+    api_key: "REPLACE_WITH_CLOUDINARY_API_KEY"
+  output_filename_only: false
+  use_transformations: false # store the original URL; the site adds sizes and formats itself
+  use_secure_url: true
+
+# Required by Decap. Used only if the media_library block above is removed (private repo setups).
+media_folder: src/assets/uploads
+public_folder: /assets/uploads
+
+collections:
+  - name: events
+    label: Events
+    label_singular: Event
+    description: >-
+      Online: Save keeps a private draft. When it looks right, set Status to Ready and click Publish:
+      the live site updates in about two minutes. On your own computer (npm run admin): Publish saves the file
+      in the folder, then run npm run deploy to put it live.
+    folder: src/events
+    create: true
+    slug: "{{start | date('YYYY-MM-DD')}}-{{slug}}"
+    summary: "{{title}} ({{start | date('MMM D, YYYY')}})"
+    sortable_fields: ["start", "title"]
+    fields:
+      - label: Event name
+        name: title
+        widget: string
+        hint: Short and clear. This is the page title and the name people see when the link is shared.
+
+      - label: Starts
+        name: start
+        widget: datetime
+        format: "YYYY-MM-DD HH:mm"
+        picker_utc: false
+        default: ""
+        hint: Florida time, even if you are traveling. Time not set yet? Pick the date, any time, and turn on the switch below.
+
+      - label: Time not set yet
+        name: time_tba
+        widget: boolean
+        default: false
+        required: false
+        hint: The page says "Time to be announced" and calendars get an all-day entry. Turn it off once you know the time.
+
+      - label: Ends
+        name: end
+        widget: datetime
+        format: "YYYY-MM-DD HH:mm"
+        picker_utc: false
+        default: ""
+        required: false
+        hint: Optional, but calendars need it to block the right amount of time.
+
+      - label: Status
+        name: status
+        widget: select
+        default: scheduled
+        options:
+          - { label: "On", value: scheduled }
+          - { label: "Postponed", value: postponed }
+          - { label: "Canceled", value: canceled }
+        hint: Postponed or Canceled shows a badge on the event. Canceled also hides the RSVP and calendar buttons.
+
+      - label: Place name
+        name: venue
+        widget: string
+        required: false
+        hint: The beach, park, shop or studio name. Leave it empty for a home.
+
+      - label: Street address
+        name: address
+        widget: string
+        required: false
+        hint: Public places only. Leave it blank for a beach or park (the map link uses the place name and city). Never type a home address here.
+
+      - label: Private address (sent by email)
+        name: address_private
+        widget: boolean
+        default: false
+        required: false
+        hint: Turn on for a home or any place you do not want public. The page says the address is sent by email after sign-up, and there is no map link.
+
+      - label: City
+        name: city
+        widget: string
+        hint: City and state, like Boca Raton, FL
+
+      - label: Short description
+        name: summary
+        widget: text
+        pattern: ['^[\s\S]{1,200}$', "Keep it under 200 characters."]
+        hint: One or two sentences. Shows on the events list and when the link is shared on Instagram or WhatsApp.
+
+      - label: Flyer or cover photo
+        name: cover
+        widget: image
+        required: false
+        choose_url: false
+        hint: The event flyer (4:5, like an Instagram post) or your favorite photo.
+
+      - label: Describe the flyer or photo
+        name: cover_alt
+        widget: string
+        required: false
+        hint: A few words on what it shows, for people who use screen readers.
+
+      - label: Sign-up form
+        name: registration
+        widget: select
+        default: none
+        required: false
+        options:
+          - { label: "No form", value: none }
+          - { label: "Open: people can sign up", value: open }
+          - { label: "Waitlist: the event is full", value: waitlist }
+          - { label: "Closed: no more sign-ups", value: closed }
+        hint: >-
+          Open adds a sign-up form to the event page. Each sign-up arrives by email and in Netlify under Forms.
+          The form does not count people, so when you have enough, switch to Waitlist and Publish.
+
+      - label: Number of spots
+        name: spots
+        widget: number
+        value_type: int
+        min: 1
+        required: false
+        hint: Optional. Shows "Limited to 30 spots" (with your number) on the page.
+
+      - label: Waiver link
+        name: waiver_url
+        widget: string
+        required: false
+        pattern: ['^https://\S+$', "Paste a full link that starts with https://"]
+        hint: >-
+          Optional. When filled in, people must tick "I have read and agree to the event waiver" to sign up.
+          Use a waiver written or approved by a lawyer (or the trainer's own), not one written here.
+
+      - label: Button link
+        name: rsvp_url
+        widget: string
+        required: false
+        pattern: ['^https://\S+$', "Paste a full link that starts with https://"]
+        hint: Optional. A sign-up page somewhere else (like Luma) or the Instagram post about the event.
+
+      - label: Button text
+        name: rsvp_label
+        widget: string
+        required: false
+        default: RSVP
+        hint: Like RSVP or See the post.
+
+      - label: Details
+        name: body
+        widget: markdown
+        required: false
+        buttons: [bold, italic, link, bulleted-list, numbered-list]
+        editor_components: []
+        modes: [rich_text]
+        hint: What to bring, parking, who is coming. Keep private details (home addresses, phone numbers) out.
+
+      - label: Photos from the event
+        name: gallery
+        widget: list
+        required: false
+        collapsed: true
+        label_singular: photo
+        summary: "{{fields.alt}}"
+        max: 40
+        hint: Add after the event. Only post photos of people who said yes to being posted.
+        fields:
+          - label: Photo
+            name: image
+            widget: image
+            choose_url: false
+          - label: What is in the photo?
+            name: alt
+            widget: string
+            required: false
+            hint: Optional but kind, for people who use screen readers. Like two friends laughing on the sand.
+
+      - label: Photo credit
+        name: photo_credit
+        widget: string
+        required: false
+        hint: Optional. The photographer's name or @handle.
+
+  - name: settings
+    label: Page text
+    editor:
+      preview: false
+    files:
+      - name: home
+        label: Events page intro
+        file: src/_data/home.json
+        fields:
+          - { label: Small label above the headline, name: eyebrow, widget: string }
+          - label: Headline
+            name: headline
+            widget: string
+            hint: Put *stars* around one word to make it pink, like come *hang* with us
+          - { label: Intro, name: intro, widget: text }
+          - { label: Message when nothing is coming up, name: empty_upcoming, widget: text }

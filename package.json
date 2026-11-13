@@ -1,0 +1,23 @@
+{
+  "name": "aquaberry-events",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AquaBerry events site (events.aquaberry.store): Eleventy static site with Decap CMS and Netlify Forms sign-ups.",
+  "scripts": {
+    "build": "node scripts/site.js build",
+    "start": "node scripts/site.js preview",
+    "preview:samples": "node scripts/site.js preview --samples",
+    "admin": "node scripts/site.js admin",
+    "deploy:draft": "npm run build && npx --yes netlify-cli@27.15.0 deploy --no-build --dir=_site --message=local-draft",
+    "deploy": "npm run build && npx --yes netlify-cli@27.15.0 deploy --no-build --dir=_site --prod --message=local-folder"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "3.1.7",
+    "@11ty/eleventy-img": "7.1.1",
+    "js-yaml": "4.3.2"
+  }
+}

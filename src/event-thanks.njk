@@ -1,0 +1,37 @@
+---
+# Thank-you page for each event with a sign-up form: /events/<event-id>/thanks/
+# Netlify Forms shows this page after a sign-up (the form's action). It is public but never indexed,
+# so it must not hold anything private: no address, no names.
+pagination:
+  data: collections.signupEvents
+  size: 1
+  alias: event
+permalink: "/events/{{ event.data.eventSlug }}/thanks/"
+layout: layouts/base.njk
+eleventyExcludeFromCollections: true
+noindex: true
+eleventyComputed:
+  metaTitle: "Thank you | {{ event.data.title | safe }}"
+---
+{%- set info = event.data.info %}
+{#- No hero flower here: event names are long and the text would run over it on phones. #}
+<section class="hero hero--simple thanks">
+  <div class="wrap hero-inner">
+    <p class="eyebrow"><span class="dot" aria-hidden="true"></span>{{ event.data.title }}</p>
+    {%- if info.registration == "waitlist" %}
+    <h1 class="display">you're on the <em>waitlist</em> 💖</h1>
+    <p class="lede">This one is full right now. If a spot opens up, we'll email you.</p>
+    {%- else %}
+    <h1 class="display">we got your <em>sign-up</em> 💖</h1>
+    <p class="lede">We'll email you to confirm your spot{% if info.addressPrivate %}, with the exact address{% endif %}. Keep an eye on your inbox, and your spam folder just in case.</p>
+    {%- endif %}
+    <p class="thanks-when"><strong>{{ info.dateLong }}</strong><br>{{ info.timeRange }}</p>
+    <p class="thanks-actions">
+      <a class="btn" href="{{ event.url }}">Back to the event</a>
+      {%- if info.registration != "waitlist" %}
+      <a class="btn btn-secondary" href="/events/{{ event.data.eventSlug }}/event.ics">Add to calendar</a>
+      {%- endif %}
+      <a class="text-link" href="{{ site.storeUrl }}">Shop AquaBerry</a>
+    </p>
+  </div>
+</section>

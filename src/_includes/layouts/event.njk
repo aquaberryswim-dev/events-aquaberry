@@ -1,0 +1,114 @@
+---
+layout: layouts/base.njk
+---
+{#-
+  One event page. Content comes from the CMS fields (src/events/*.md):
+  title, start, time_tba, end, status, venue, address, address_private, city, summary, cover, cover_alt,
+  registration, spots, waiver_url, rsvp_url, rsvp_label, the Markdown body, gallery (image + alt), photo_credit.
+  Computed values (dates in Florida time, place text, form name) come from lib/event-data.js as `info`.
+-#}
+<article class="event" data-ends="{{ info.endsIso }}">
+  <div class="wrap">
+    <p class="back-link"><a href="/">All events</a></p>
+
+    <header class="event-header">
+      <div class="date-tile date-tile--large" aria-hidden="true">
+        <span>{{ info.tile.month }}</span>
+        <strong>{{ info.tile.day }}</strong>
+        <span>{{ info.tile.weekday }}</span>
+      </div>
+      <div class="event-heading">
+        {%- if info.statusLabel %}<p class="badge badge--alert">{{ info.statusLabel }}</p>{% endif %}
+        <h1 class="display display--event">{{ title }}</h1>
+        {%- if summary %}<p class="lede">{{ summary }}</p>{% endif %}
+        {#- The chip only states what the owners entered: a number of spots, or that the event is full. #}
+        {%- if info.hasSignup and (info.spots or info.registration == "waitlist") %}
+        <p class="chip chip--heading" data-show="upcoming"{% if not info.upcoming %} hidden{% endif %}>
+          {%- if info.registration == "waitlist" %}Full: waitlist open{% else %}Limited to {{ info.spots }} spots{% endif -%}
+        </p>
+        {%- endif %}
+      </div>
+    </header>
+
+    <dl class="facts">
+      <div class="fact">
+        <dt>When</dt>
+        <dd><time datetime="{{ info.timeAttr }}">{{ info.dateLong }}</time><br>{{ info.timeRange }}</dd>
+      </div>
+      {%- if info.placeLines.length or info.addressPrivate %}
+      <div class="fact">
+        <dt>Where</dt>
+        <dd>
+          {%- for line in info.placeLines %}{{ line }}{% if not loop.last %}<br>{% endif %}{% endfor %}
+          {%- if info.addressPrivate %}
+          <span class="fact-note">{% if info.hasSignup %}Exact address sent by email after you sign up.{% else %}Exact address shared with guests by email.{% endif %}</span>
+          {%- endif %}
+          {%- if info.mapUrl %}<a class="fact-link" href="{{ info.mapUrl }}">Open in Maps</a>{% endif %}
+        </dd>
+      </div>
+      {%- endif %}
+    </dl>
+
+    {#- Sign-up, RSVP and calendar buttons only make sense before the event and while it is still on. -#}
+    {%- if info.status != "canceled" %}
+    <div class="event-actions" data-show="upcoming"{% if not info.upcoming %} hidden{% endif %}>
+      {%- if info.registration == "open" and info.hasSignup %}<a class="btn" href="#signup">Sign up</a>
+      {%- elif info.registration == "waitlist" and info.hasSignup %}<a class="btn" href="#signup">Join the waitlist</a>{% endif %}
+      {%- if rsvp_url %}<a class="btn{% if info.hasSignup %} btn-secondary{% endif %}" href="{{ rsvp_url }}">{{ rsvp_label or "RSVP" }}</a>{% endif %}
+      <a class="btn btn-secondary" href="/events/{{ eventSlug }}/event.ics">Add to calendar</a>
+      {%- if info.googleCalendarUrl %}<a class="text-link" href="{{ info.googleCalendarUrl }}">Google Calendar</a>{% endif %}
+    </div>
+    {%- if info.registration == "closed" %}
+    <p class="ended-note" data-show="upcoming"{% if not info.upcoming %} hidden{% endif %}>Sign-ups are closed for this one. Follow us on Instagram for the next event 💖</p>
+    {%- endif %}
+    {%- endif %}
+    <p class="ended-note" data-show="past"{% if info.upcoming %} hidden{% endif %}>
+      This one already happened.{% if gallery and gallery.length %} The photos are below.{% endif %}
+    </p>
+
+    <div class="event-body{% if cover %} has-flyer{% endif %}">
+      {%- if cover %}
+      <figure class="flyer">
+        {% eventImage cover, cover_alt or title, "(min-width: 900px) 420px, 100vw", true %}
+      </figure>
+      {%- endif %}
+      {%- if content | trim %}
+      <div class="prose">
+        {{ content | safe }}
+      </div>
+      {%- endif %}
+    </div>
+
+    {#- Built only while the event is upcoming. site.js hides it once the event ends, until the next publish removes it. #}
+    {%- if info.hasSignup and info.upcoming %}
+    <section class="signup" id="signup" aria-labelledby="signup-title" data-show="upcoming">
+      {% include "partials/signup-form.njk" %}
+    </section>
+    {%- endif %}
+
+    {%- if gallery and gallery.length %}
+    <section class="gallery" aria-labelledby="gallery-title">
+      <h2 id="gallery-title" class="section-title"><span class="dot" aria-hidden="true"></span>Photos</h2>
+      <ul class="gallery-grid" data-gallery>
+        {%- for photo in gallery %}{% if photo.image %}
+        <li>{% galleryItem photo.image, photo.alt, title, loop.index, gallery.length %}</li>
+        {%- endif %}{% endfor %}
+      </ul>
+      {%- if photo_credit %}<p class="photo-credit">Photos by {{ photo_credit }}</p>{% endif %}
+    </section>
+
+    <dialog class="lightbox" data-lightbox aria-label="Photo viewer">
+      <button class="lightbox-button lightbox-close" type="button" data-lightbox-close aria-label="Close photo viewer">×</button>
+      <figure class="lightbox-figure">
+        <img data-lightbox-image alt="">
+        <figcaption data-lightbox-caption></figcaption>
+      </figure>
+      <div class="lightbox-nav">
+        <button class="lightbox-button" type="button" data-lightbox-prev aria-label="Previous photo">‹</button>
+        <p class="lightbox-count" data-lightbox-count aria-live="polite"></p>
+        <button class="lightbox-button" type="button" data-lightbox-next aria-label="Next photo">›</button>
+      </div>
+    </dialog>
+    {%- endif %}
+  </div>
+</article>

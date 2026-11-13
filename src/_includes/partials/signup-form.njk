@@ -1,0 +1,75 @@
+{#-
+  Sign-up form, handled by Netlify Forms: no code, no database, free on the credit-based plans.
+
+  How it works:
+  - Netlify finds this form in the built HTML when the site is deployed. "Form detection" must be turned on
+    (Netlify > Forms) BEFORE the deploy, or the form is not registered and sign-ups are lost.
+  - Only fields that are in this HTML at deploy time are saved. Do not add fields with JavaScript.
+  - Each event has its own form name (rsvp-<event-id>), so each event gets its own list and CSV in Netlify > Forms.
+  - The field called "email" sets the Reply-To of Netlify's notification email, so the owners can just hit Reply.
+  - The form does not count sign-ups. The owners confirm spots by email and switch the event to "Waitlist" when full.
+  Expects: title, eventSlug, info (from lib/event-data.js).
+-#}
+{%- set waitlist = info.registration == "waitlist" %}
+<div class="signup-card">
+  <h2 id="signup-title" class="section-title"><span class="dot" aria-hidden="true"></span>{% if waitlist %}Join the waitlist{% else %}Sign up{% endif %}</h2>
+  <p class="signup-intro">
+    {%- if waitlist %}This one is full right now. Join the waitlist and we'll email you if a spot opens up.
+    {%- else %}{% if info.spots %}Limited to {{ info.spots }} spots. {% endif %}Sign up and we'll email you to confirm your spot, with all the details.{% endif -%}
+  </p>
+
+  <form class="signup-form" name="{{ info.formName }}" method="POST" action="/events/{{ eventSlug }}/thanks/" data-netlify="true" netlify-honeypot="bot-field">
+    {#- Netlify needs form-name. "event" and "list" make the CSV export easy to read later. #}
+    <input type="hidden" name="form-name" value="{{ info.formName }}">
+    <input type="hidden" name="event" value="{{ title }} ({{ info.dateShort }})">
+    <input type="hidden" name="list" value="{{ 'waitlist' if waitlist else 'sign-up' }}">
+
+    {#- Spam trap: people never see this field; bots fill it in and Netlify drops their submission. #}
+    <p hidden>
+      <label>Leave this empty: <input name="bot-field" tabindex="-1" autocomplete="off"></label>
+    </p>
+
+    <div class="field">
+      <label for="signup-name">Your name</label>
+      <input id="signup-name" name="name" type="text" autocomplete="name" required maxlength="100">
+    </div>
+
+    <div class="field">
+      <label for="signup-email">Email</label>
+      <input id="signup-email" name="email" type="email" autocomplete="email" required maxlength="200" aria-describedby="signup-email-hint">
+      <p class="field-hint" id="signup-email-hint">We send your confirmation{% if info.addressPrivate %} and the address{% endif %} here.</p>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="signup-phone">Phone <span class="optional">(optional)</span></label>
+        <input id="signup-phone" name="phone" type="tel" autocomplete="tel" maxlength="30" aria-describedby="signup-phone-hint">
+        <p class="field-hint" id="signup-phone-hint">Only for day-of updates, like a weather change.</p>
+      </div>
+      <div class="field">
+        <label for="signup-instagram">Instagram <span class="optional">(optional)</span></label>
+        <input id="signup-instagram" name="instagram" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="60" placeholder="@yourhandle">
+      </div>
+    </div>
+
+    <div class="checks">
+      {%- if info.waiverUrl %}
+      <label class="check">
+        <input type="checkbox" name="waiver" value="agreed" required>
+        <span>I have read and agree to the <a href="{{ info.waiverUrl }}" target="_blank" rel="noopener">event waiver</a>.</span>
+      </label>
+      {%- endif %}
+      <label class="check">
+        <input type="checkbox" name="photos_ok" value="yes">
+        <span>You can post photos of me from the event.</span>
+      </label>
+      <label class="check">
+        <input type="checkbox" name="news" value="yes">
+        <span>Send me new drops before everyone else (AquaBerry emails, no spam).</span>
+      </label>
+    </div>
+
+    <button class="btn" type="submit" data-submit-label="Sending...">{% if waitlist %}Add me to the waitlist{% else %}Sign me up{% endif %}</button>
+    <p class="form-note">We use your info for this event only, plus AquaBerry emails if you tick that box.</p>
+  </form>
+</div>

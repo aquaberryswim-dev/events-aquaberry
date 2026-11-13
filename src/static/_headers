@@ -1,0 +1,26 @@
+# Netlify response headers for events.aquaberry.store.
+# This file is copied to the root of the built site, so it works the same for drag-and-drop, CLI and Git deploys.
+# (Headers written in netlify.toml are skipped when only the _site folder is dragged into Netlify.)
+
+# Security headers for every page.
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+# The CMS: never cached, never indexed.
+/admin/*
+  Cache-Control: no-cache
+  X-Robots-Tag: noindex
+
+# Resized images and the font have unique file names, so browsers can keep them for a year.
+/assets/img/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Lets aquaberry.store read the events list later (for a "next event" banner) without a store redeploy.
+/events.json
+  Access-Control-Allow-Origin: https://aquaberry.store

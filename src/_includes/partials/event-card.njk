@@ -1,0 +1,44 @@
+{#-
+  One event card. Used twice on the home page: once in "Upcoming" and once in "Past".
+  The build hides the copy that does not apply yet; the browser re-checks with its own clock (see site.js),
+  so an event moves to "Past" when it ends, even before anyone publishes again.
+  Expects: event (collection item), when ("upcoming" or "past").
+-#}
+{%- set info = event.data.info -%}
+{%- set shouldHide = (when == "upcoming" and not info.upcoming) or (when == "past" and info.upcoming) -%}
+<li class="card-item" data-when="{{ when }}" data-ends="{{ info.endsIso }}"{% if shouldHide %} hidden{% endif %}>
+  <article class="event-card event-card--{{ when }}{% if event.data.cover %} has-media{% endif %}">
+    {%- if event.data.cover %}
+    <div class="card-media">
+      {% eventImage event.data.cover, event.data.cover_alt or event.data.title, "(min-width: 900px) 320px, (min-width: 640px) 45vw, 100vw" %}
+    </div>
+    {%- elif when == "past" %}
+    <div class="card-media card-media--empty" aria-hidden="true">
+      <img src="/assets/brand/aquaberry-flower-pink.svg" alt="" width="72" height="72">
+    </div>
+    {%- endif %}
+    <div class="card-body">
+      {%- if when == "upcoming" %}
+      <div class="date-tile" aria-hidden="true">
+        <span>{{ info.tile.month }}</span>
+        <strong>{{ info.tile.day }}</strong>
+        <span>{{ info.tile.weekday }}</span>
+      </div>
+      {%- endif %}
+      <div class="card-text">
+        {%- if info.statusLabel %}<p class="badge badge--alert">{{ info.statusLabel }}</p>{% endif %}
+        <h3 class="card-title"><a href="{{ event.url }}">{{ event.data.title }}</a></h3>
+        <p class="card-meta">
+          <time datetime="{{ info.timeAttr }}">{{ info.dateShort }}{% if when == "upcoming" %} · {{ info.timeShort }}{% endif %}</time>
+          {%- if info.placeShort %}<br>{{ info.placeShort }}{% endif %}
+        </p>
+        {%- if when == "upcoming" and event.data.summary %}
+        <p class="card-summary">{{ event.data.summary }}</p>
+        {%- endif %}
+        {%- if when == "past" and info.photoCount %}
+        <p class="chip">{{ info.photoCount | plural("photo", "photos") }}</p>
+        {%- endif %}
+      </div>
+    </div>
+  </article>
+</li>

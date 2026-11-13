@@ -1,0 +1,16 @@
+# Netlify settings for events.aquaberry.store (AquaBerry team, Free plan: 300 credits a month, shared with the store).
+# A production deploy costs 15 credits, whichever way it is made (Git, CLI or drag-and-drop).
+#
+# Today the site is deployed from a local folder: `npm run deploy`, or drag the _site folder into Netlify.
+# These [build] settings are used later, once the project is connected to the GitHub repo.
+# Response headers live in src/static/_headers so they also apply to drag-and-drop deploys.
+
+[build]
+  command = "npm run build"
+  publish = "_site"
+  # Git deploys only: skip the build (and its 15-credit production deploy) when a commit changes nothing
+  # the site uses, for example README edits. Exit code 0 means "skip". The first build always runs.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- src/ lib/ scripts/ eleventy.config.js package.json package-lock.json netlify.toml"
+
+[build.environment]
+  NODE_VERSION = "22"
