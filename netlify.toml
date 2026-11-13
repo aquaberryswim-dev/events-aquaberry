@@ -8,9 +8,14 @@
 [build]
   command = "npm run build"
   publish = "_site"
-  # Git deploys only: skip the build (and its 15-credit production deploy) when a commit changes nothing
-  # the site uses, for example README edits. Exit code 0 means "skip". The first build always runs.
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- src/ lib/ scripts/ eleventy.config.js package.json package-lock.json netlify.toml"
+  # Skip a build (and its 15-credit production deploy) only when ALL of these are true:
+  #   1. Netlify knows the last commit it built (CACHED_COMMIT_REF is set),
+  #   2. that commit is not the one being built (after a failed build there is no cache, and Netlify then sets
+  #      CACHED_COMMIT_REF to the current commit; comparing a commit with itself finds no changes and would
+  #      cancel every build until one succeeds),
+  #   3. nothing the site uses changed between the two (for example, a README-only edit).
+  # Exit code 0 means "skip"; anything else, including an error, means "build".
+  ignore = 'test -n "$CACHED_COMMIT_REF" && test "$CACHED_COMMIT_REF" != "$COMMIT_REF" && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- src/ lib/ scripts/ eleventy.config.js package.json package-lock.json netlify.toml'
 
 [build.environment]
   NODE_VERSION = "22"

@@ -208,6 +208,8 @@ Test it with `npm run admin` first, then deploy.
 | Photo picker shows an error | Fill in the Cloudinary cloud name and API key in `src/admin/config.yml`; the person must be a Cloudinary user |
 | Build fails: "requires the participation agreement" or "needs a version date" | Restore `src/legal/participation-agreement.md` or fix its Version date (YYYY-MM-DD), or turn the event's switch off |
 | An entry in the admin shows another entry's text | Reload the page before saving. It can happen after jumping between entries with a pasted /admin link |
+| A deploy shows "Canceled" right after a failed one | Fixed Nov 13, 2026: the skip rule in `netlify.toml` now always builds when there is no earlier build to compare with. To force a build: Deploys > Trigger deploy > Clear cache and deploy project |
+| Build fails with "Cannot read properties of undefined (reading '0')" in signup-form.njk | `eleventy.config.js` is older than the templates (it lacks the agreement collection): restore the current version |
 | Files uploaded on GitHub landed in the repo root | GitHub's "choose your files" picker puts every file in the folder you are viewing. Drag whole folders onto the upload page instead, which keeps their paths |
 | Invite link opens the home page and nothing happens (online admin) | Check `src/assets/js/site.js` is deployed; the link should jump to `/admin/` |
 | "Unrecognized Git contributor" on a deploy (online admin) | The repo was made private. Make it public again, or move the team to Pro |

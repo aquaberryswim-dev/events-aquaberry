@@ -1,0 +1,7 @@
+node_modules/
+_site/
+.preview/
+.cache/
+.netlify/
+.env
+.DS_Store
