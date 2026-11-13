@@ -8,9 +8,13 @@
   - Each event has its own form name (rsvp-<event-id>), so each event gets its own list and CSV in Netlify > Forms.
   - The field called "email" sets the Reply-To of Netlify's notification email, so the owners can just hit Reply.
   - The form does not count sign-ups. The owners confirm spots by email and switch the event to "Waitlist" when full.
-  Expects: title, eventSlug, info (from lib/event-data.js).
+  - With "Require the participation agreement" on, the form gets a required "I agree" box plus the agreement's
+    version date, so every sign-up records which version the person accepted (fields "agreement" and
+    "agreement_version" in Netlify and the CSV).
+  Expects: title, eventSlug, info (from lib/event-data.js), collections.agreement.
 -#}
 {%- set waitlist = info.registration == "waitlist" %}
+{%- set agreement = (collections.agreement | first) if info.agreementRequired else "" %}
 <div class="signup-card">
   <h2 id="signup-title" class="section-title"><span class="dot" aria-hidden="true"></span>{% if waitlist %}Join the waitlist{% else %}Sign up{% endif %}</h2>
   <p class="signup-intro">
@@ -23,6 +27,9 @@
     <input type="hidden" name="form-name" value="{{ info.formName }}">
     <input type="hidden" name="event" value="{{ title }} ({{ info.dateShort }})">
     <input type="hidden" name="list" value="{{ 'waitlist' if waitlist else 'sign-up' }}">
+    {%- if agreement %}
+    <input type="hidden" name="agreement_version" value="{{ agreement.data.version }}">
+    {%- endif %}
 
     {#- Spam trap: people never see this field; bots fill it in and Netlify drops their submission. #}
     <p hidden>
@@ -52,13 +59,18 @@
       </div>
     </div>
 
-    <div class="checks">
-      {%- if info.waiverUrl %}
+    {%- if agreement %}
+    {#- Shown in full view before the button, so the release is hard to miss. The link opens a new tab, so typed answers stay. #}
+    <div class="agreement">
+      <p class="agreement-summary" id="signup-agreement-summary">{{ agreement.data.summary }}</p>
       <label class="check">
-        <input type="checkbox" name="waiver" value="agreed" required>
-        <span>I have read and agree to the <a href="{{ info.waiverUrl }}" target="_blank" rel="noopener">event waiver</a>.</span>
+        <input type="checkbox" name="agreement" value="agreed" required aria-describedby="signup-agreement-summary">
+        <span>I have read and agree to the <a href="{{ agreement.url }}" target="_blank" rel="noopener">{{ agreement.data.title }}</a>.</span>
       </label>
-      {%- endif %}
+    </div>
+    {%- endif %}
+
+    <div class="checks">
       <label class="check">
         <input type="checkbox" name="photos_ok" value="yes">
         <span>You can post photos of me from the event.</span>

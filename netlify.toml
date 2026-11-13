@@ -1,9 +1,9 @@
 # Netlify settings for events.aquaberry.store (AquaBerry team, Free plan: 300 credits a month, shared with the store).
 # A production deploy costs 15 credits, whichever way it is made (Git, CLI or drag-and-drop).
 #
-# Today the site is deployed from a local folder: `npm run deploy`, or drag the _site folder into Netlify.
-# These [build] settings are used later, once the project is connected to the GitHub repo.
-# Response headers live in src/static/_headers so they also apply to drag-and-drop deploys.
+# Since Nov 13, 2026 Netlify builds from the GitHub repo (aquaberryswim-dev/events-aquaberry): every merge into main is a production
+# deploy, and pull requests and admin drafts get free Deploy Previews.
+# Response headers live in src/static/_headers so they apply to every deploy method.
 
 [build]
   command = "npm run build"

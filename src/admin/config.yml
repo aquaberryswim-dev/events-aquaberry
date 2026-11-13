@@ -38,8 +38,8 @@ logo_url: /assets/brand/aquaberry-logo-stacked-compact-pink.svg
 media_library:
   name: cloudinary
   config:
-    cloud_name: REPLACE_WITH_CLOUDINARY_CLOUD_NAME
-    api_key: "REPLACE_WITH_CLOUDINARY_API_KEY"
+    cloud_name: qhk5umc0
+    api_key: "146193959283482"
   output_filename_only: false
   use_transformations: false # store the original URL; the site adds sizes and formats itself
   use_secure_url: true
@@ -53,9 +53,9 @@ collections:
     label: Events
     label_singular: Event
     description: >-
-      Online: Save keeps a private draft. When it looks right, set Status to Ready and click Publish:
-      the live site updates in about two minutes. On your own computer (npm run admin): Publish saves the file
-      in the folder, then run npm run deploy to put it live.
+      Save keeps a private draft with a free preview. When it looks right, set Status to Ready and click Publish:
+      the live site updates in about two minutes. Publish once when everything is ready, because each Publish
+      uses credits from the plan the store shares.
     folder: src/events
     create: true
     slug: "{{start | date('YYYY-MM-DD')}}-{{slug}}"
@@ -166,14 +166,15 @@ collections:
         required: false
         hint: Optional. Shows "Limited to 30 spots" (with your number) on the page.
 
-      - label: Waiver link
-        name: waiver_url
-        widget: string
+      - label: Require the participation agreement
+        name: agreement_required
+        widget: boolean
+        default: false
         required: false
-        pattern: ['^https://\S+$', "Paste a full link that starts with https://"]
         hint: >-
-          Optional. When filled in, people must tick "I have read and agree to the event waiver" to sign up.
-          Use a waiver written or approved by a lawyer (or the trainer's own), not one written here.
+          Turn on for workouts and anything active. People must tick "I have read and agree to the
+          Participation Agreement and Release" to sign up, and each sign-up records the version they accepted.
+          The agreement itself is under Page text.
 
       - label: Button link
         name: rsvp_url
@@ -240,3 +241,31 @@ collections:
             hint: Put *stars* around one word to make it pink, like come *hang* with us
           - { label: Intro, name: intro, widget: text }
           - { label: Message when nothing is coming up, name: empty_upcoming, widget: text }
+
+      # The page that sign-up forms link to (events.aquaberry.store/participation-agreement/).
+      # Its layout and address come from src/legal/legal.11tydata.js, so saving here cannot break the page.
+      - name: agreement
+        label: Participation agreement
+        file: src/legal/participation-agreement.md
+        fields:
+          - label: Title
+            name: title
+            widget: string
+            hint: The checkbox reads "I have read and agree to the" followed by this title.
+          - label: Version date
+            name: version
+            widget: string
+            pattern: ['^\d{4}-\d{2}-\d{2}$', "Use the date as YYYY-MM-DD, like 2026-11-13"]
+            hint: Change it to today's date whenever the text changes. Every sign-up records the version the person accepted.
+          - label: Short summary (shown above the checkbox)
+            name: summary
+            widget: text
+            pattern: ['^[\s\S]{1,400}$', "Keep it under 400 characters."]
+            hint: The key points in plain words, so people see them before they tick the box.
+          - label: Agreement text
+            name: body
+            widget: markdown
+            buttons: [bold, italic, link, heading-three, bulleted-list, numbered-list]
+            editor_components: []
+            modes: [rich_text]
+            hint: Legal text. Change it only with your lawyer, and update the version date when you do.

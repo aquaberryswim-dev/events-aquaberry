@@ -103,7 +103,12 @@
                   "div",
                   { className: "signup-card" },
                   h("h2", { className: "section-title" }, h("span", { className: "dot" }), registration === "waitlist" ? "Join the waitlist" : "Sign up"),
-                  h("p", { className: "signup-intro" }, "The sign-up form appears here on the live site: name, email, phone and Instagram (optional), photo and email choices" + (data("waiver_url") ? ", and the waiver checkbox." : "."))
+                  h(
+                    "p",
+                    { className: "signup-intro" },
+                    "The sign-up form appears here on the live site: name, email, phone and Instagram (optional), photo and email choices" +
+                      (data("agreement_required") === true ? ", and the required participation agreement checkbox." : ".")
+                  )
                 )
               )
             : null,

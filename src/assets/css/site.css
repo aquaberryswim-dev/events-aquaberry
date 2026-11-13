@@ -710,6 +710,35 @@ button.btn {
   width: 100%;
 }
 
+/* Participation agreement: summary and required checkbox, on a light Sun Yellow so it stands out.
+   Ink text on this tint is above 13:1. */
+.agreement {
+  padding: 14px 16px 6px;
+  border-radius: var(--radius-small);
+  background: rgba(255, 222, 106, 0.32);
+}
+
+.agreement-summary {
+  margin: 0 0 4px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+/* Participation agreement page */
+.legal-version {
+  margin: 0 0 16px;
+  font-size: 0.9375rem;
+}
+
+.legal-summary {
+  max-width: 65ch;
+  margin: 0 0 28px;
+  padding: 14px 16px;
+  border-radius: var(--radius-small);
+  background: rgba(255, 222, 106, 0.32);
+  line-height: 1.55;
+}
+
 .form-note {
   margin: -4px 0 0;
   font-size: 0.875rem;
